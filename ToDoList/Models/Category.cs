@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
+using System;
 
 namespace ToDoList.Models
 {
@@ -149,6 +150,9 @@ namespace ToDoList.Models
         conn.Dispose();
       }
     }
-
+    public override int GetHashCode()
+    {
+      return this.GetId().GetHashCode();
+    }
   }
 }

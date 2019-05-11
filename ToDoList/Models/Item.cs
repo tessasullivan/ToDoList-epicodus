@@ -7,11 +7,13 @@ namespace ToDoList.Models
   {
     private string _description;
     private int _id;
+    private int _categoryId;
 
-    public Item (string description, int id = 0)
+    public Item (string description, int categoryId, int id = 0)
     {
       _description = description;
       _id = id;
+      _categoryId = categoryId;
     }
 
     public string GetDescription()
@@ -28,7 +30,10 @@ namespace ToDoList.Models
     {
       return _id;
     }
-
+    public int GetCategoryId()
+    {
+      return _categoryId;
+    }
     public static List<Item> GetAll()
     {
       List<Item> allItems = new List<Item> {};
@@ -41,7 +46,8 @@ namespace ToDoList.Models
       {
         int itemId = rdr.GetInt32(0);
         string itemDescription = rdr.GetString(1);
-        Item newItem = new Item(itemDescription, itemId);
+        int itemCategoryId = rdr.GetInt32(2);
+        Item newItem = new Item(itemDescription, itemCategoryId, itemId);
         allItems.Add(newItem);
       }
       conn.Close();
@@ -79,12 +85,14 @@ namespace ToDoList.Models
       var rdr = cmd.ExecuteReader() as MySqlDataReader;
       int itemId = 0;
       string itemName = "";
+      int itemCategoryId = 0;
       while(rdr.Read())
       {
         itemId = rdr.GetInt32(0);
         itemName = rdr.GetString(1);
+        itemCategoryId = rdr.GetInt32(2);
       }
-      Item newItem = new Item(itemName, itemId);
+      Item newItem = new Item(itemName, itemCategoryId, itemId);
       conn.Close();
       if (conn != null)
       {
@@ -104,7 +112,8 @@ namespace ToDoList.Models
          Item newItem = (Item) otherItem;
          bool idEquality = this.GetId() == newItem.GetId();
          bool descriptionEquality = this.GetDescription() == newItem.GetDescription();
-         return (idEquality && descriptionEquality);
+         bool categoryEquality = this.GetCategoryId() == newItem.GetCategoryId();
+         return (idEquality && descriptionEquality && categoryEquality);
        }
     }
 
@@ -113,11 +122,15 @@ namespace ToDoList.Models
       MySqlConnection conn = DB.Connection();
       conn.Open();
       var cmd = conn.CreateCommand() as MySqlCommand;
-      cmd.CommandText = @"INSERT INTO items (description) VALUES (@description);";
+      cmd.CommandText = @"INSERT INTO items (description, category_id) VALUES (@description, @category_id);";
       MySqlParameter description = new MySqlParameter();
       description.ParameterName = "@description";
       description.Value = this._description;
       cmd.Parameters.Add(description);
+      MySqlParameter categoryId = new MySqlParameter();
+      categoryId.ParameterName = "@category_id";
+      categoryId.Value = this._categoryId;
+      cmd.Parameters.Add(categoryId);
       cmd.ExecuteNonQuery();
       _id = (int) cmd.LastInsertedId;
       conn.Close();
@@ -148,6 +161,10 @@ namespace ToDoList.Models
       {
         conn.Dispose();
       }
+    }
+    public override int GetHashCode()
+    {
+      return this.GetId().GetHashCode();
     }
   }
 }

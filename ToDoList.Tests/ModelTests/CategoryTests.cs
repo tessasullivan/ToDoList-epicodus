@@ -172,6 +172,5 @@ namespace ToDoList.Tests
       //Assert
       CollectionAssert.AreEqual(testItemList, resultItemList);
     }
-
   }
 }
